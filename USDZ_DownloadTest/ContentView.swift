@@ -143,9 +143,7 @@ struct ContentView: View {
                 
                 HStack(spacing: 12) {
                     Button("순차 다운로드") {
-                        Task {
-                            await appModel.usdzDownloadManager.startDownloadingSequentially()
-                        }
+                        appModel.startDownloadingSequentiallyViaLimit()
                     }
                     .buttonStyle(.bordered)
                     .disabled(appModel.usdzDownloadManager.isDownloadingAll)

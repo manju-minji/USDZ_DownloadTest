@@ -160,6 +160,12 @@ class USDZDownloadManager {
         NotificationCenter.default.post(name: .allUsdzFilesDownloadComplete, object: nil)
         print("📢 Posted notification: All USDZ files download complete (with limit)")
     }
+
+    // MARK: - Migration Note
+    // 기존 startDownloadingSequentially()는 제거되었습니다.
+    // 순차 다운로드가 필요하면 아래 둘 중 하나를 사용하세요.
+    // 1) await startDownloadingSequentiallyViaLimit()
+    // 2) await startDownloadingAllWithLimit(maxConcurrentDownloads: 1)
     
     private func downloadFile(at index: Int) async {
         guard index < files.count else { return }
@@ -262,30 +268,6 @@ class USDZDownloadManager {
             files[index].entity = nil
             files[index].error = nil
         }
-    }
-    
-    /// 순차적으로 다운로드 (기존 방식)
-    func startDownloadingSequentially() async {
-        // 전체 다운로드 시작 시간 기록
-        totalDownloadStartTime = Date()
-        totalDownloadEndTime = nil
-        isDownloadingAll = true
-        
-        // 모든 파일 상태 초기화
-        resetAllFileStates()
-        currentActiveDownloads = 0
-        
-        for index in files.indices {
-            await downloadFile(at: index)
-        }
-        
-        // 전체 다운로드 완료 시간 기록
-        totalDownloadEndTime = Date()
-        isDownloadingAll = false
-        
-        // 모든 다운로드가 완료되었음을 notification으로 알림
-        NotificationCenter.default.post(name: .allUsdzFilesDownloadComplete, object: nil)
-        print("📢 Posted notification: All USDZ files download complete (sequential)")
     }
 }
 

@@ -108,6 +108,15 @@ class AppModel {
             await MainActor.run { self.downloadState = .completed }
         }
     }
+    
+    /// 순차 다운로드를 의도를 분명히 표현하면서 내부적으로 동시성 제한 로직을 재사용
+    /// startDownloadingAllWithLimit(maxConcurrentDownloads: 1)과 동일한 동작을 수행합니다.
+    func startDownloadingSequentiallyViaLimit() {
+        startDownloadTask {
+            await self.usdzDownloadManager.startDownloadingAllWithLimit(maxConcurrentDownloads: 1)
+            await MainActor.run { self.downloadState = .completed }
+        }
+    }
 
     /// Cancels any ongoing download tasks.
     /// 진행 중인 다운로드 작업을 취소합니다.
