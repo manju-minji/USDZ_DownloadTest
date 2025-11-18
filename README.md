@@ -91,3 +91,7 @@ loadedEntities.append(entity)
 * RealityKit 엔티티 로드는 iOS/visionOS 모두 동일 패턴으로 동작합니다.
 * 시뮬레이터와 실제 기기 간 렌더 준비 시간 차이가 있을 수 있으므로, 큰 USDZ 파일은 동시성 수를 조절하거나 사전 프리페치 전략을 고려하세요.
 
+
+https://github.com/user-attachments/assets/04a59755-f353-4481-a162-7563c77333c6
+
+
