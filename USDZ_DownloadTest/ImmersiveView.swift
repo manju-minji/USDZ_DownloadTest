@@ -159,7 +159,7 @@ struct ImmersiveView: View {
         
         for (index, entity) in parentEntity.children.enumerated() {
             // 위치 설정 (왼쪽부터 오른쪽으로)
-            let position = SIMD3<Float>(startX + Float(index) * modelSpacing, 1, -2) // Z를 -2로 변경하여 더 가깝게
+            let position = SIMD3<Float>(startX + Float(index) * modelSpacing, 0.4, -1) // Z를 -2로 변경하여 더 가깝게
             
             // 모든 entity의 크기를 균일하게 재설정 (안전을 위해)
             normalizeEntitySize(entity)
