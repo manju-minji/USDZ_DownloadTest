@@ -2,7 +2,8 @@
 
 USDZ Download Test는 여러 개의 USDZ 파일을 네트워크에서 내려받아 RealityKit의 `Entity`로 로드(렌더 준비)하는 전체 흐름을 측정하고 시각화하기 위한 샘플 프로젝트입니다. 각 파일에 대해 다운로드 시작/종료 시간, 렌더 시작/종료 시간, 파일 크기 등을 기록하고, 전체 배치 다운로드의 총 소요 시간과 진행률을 제공합니다.
 
-본 샘플은 iOS 및 visionOS를 주요 타겟으로 하며, RealityKit 기반의 엔티티 로드 흐름을 양 플랫폼에서 동일한 패턴으로 검증할 수 있습니다.
+본 샘플은 visionOS를 주요 타겟으로 하며, RealityKit 기반의 엔티티 로드 흐름을 양 플랫폼에서 동일한 패턴으로 검증할 수 있습니다. 
+본 프로젝트에는 Xcode Intelligence (GPT)가 사용되었습니다.
 
 ## 주요 기능
 - 여러 USDZ 파일 동시 다운로드 및 제한된 동시성 다운로드 지원
@@ -59,7 +60,7 @@ try await withThrowingTaskGroup(of: Void.self) { group in
 }
 ```
 
- * 다운로드 시간 측정 및 크기 포맷팅
+• 다운로드 시간 측정 및 크기 포맷팅
    • URLSession으로 데이터를 수신하면서 시작/종료 시간을 기록하고, 총 다운로드 시간을 계산합니다.
    • 수신한 데이터의 바이트 수를 사람이 읽기 쉬운 단위(예: KB/MB/GB)로 변환하여 표기합니다.
 
@@ -74,9 +75,11 @@ let sizeInBytes = data.count
 • RealityKit 엔티티 로드(렌더 준비)
    • 다운로드 완료 후 임시 파일로 저장한 뒤, RealityKit의 Entity.load(contentsOf:) 또는 유사 API로 엔티티를 비동기 로드합니다.
    • 로드 시작/종료 시간을 별도로 기록하여 네트워크 시간과 렌더 준비 시간을 구분합니다.
-   
-   let entity = try await Entity.load(contentsOf: localFileURL)
+
+```swift
+let entity = try await Entity.load(contentsOf: localFileURL)
 loadedEntities.append(entity)
+```
 
  진행률/총 소요 시간 집계
    • 각 파일의 이벤트(다운로드 시작/종료, 렌더 시작/종료)를 합산해 배치 진행률과 총 소요 시간을 계산합니다.
