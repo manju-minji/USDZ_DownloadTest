@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0513A36D2ECB5849001C9CB9 /* RealityKitContent in Frameworks */ = {isa = PBXBuildFile; productRef = 0513A36C2ECB5849001C9CB9 /* RealityKitContent */; };
+		0513A3C52ECCA79E001C9CB9 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 0513A3C42ECCA79E001C9CB9 /* README.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -24,6 +25,7 @@
 		0513A3672ECB5849001C9CB9 /* USDZ_DownloadTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = USDZ_DownloadTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0513A36B2ECB5849001C9CB9 /* RealityKitContent */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RealityKitContent; sourceTree = "<group>"; };
 		0513A37B2ECB584C001C9CB9 /* USDZ_DownloadTestTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = USDZ_DownloadTestTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0513A3C42ECCA79E001C9CB9 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -78,6 +80,7 @@
 				0513A36A2ECB5849001C9CB9 /* Packages */,
 				0513A37E2ECB584C001C9CB9 /* USDZ_DownloadTestTests */,
 				0513A3682ECB5849001C9CB9 /* Products */,
+				0513A3C42ECCA79E001C9CB9 /* README.md */,
 			);
 			sourceTree = "<group>";
 		};
@@ -191,6 +194,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0513A3C52ECCA79E001C9CB9 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
