@@ -73,7 +73,59 @@ class AppModel {
         "https://developer.apple.com/augmented-reality/quick-look/models/vintagerobot2k/robot.usdz",
         "https://developer.apple.com/augmented-reality/quick-look/models/football/ball_football_realistic.usdz",
         "https://developer.apple.com/augmented-reality/quick-look/models/baseball/ball_baseball_realistic.usdz",
-        "https://developer.apple.com/augmented-reality/quick-look/models/boxing-glove/boxing_glove_realistic.usdz"
+        "https://developer.apple.com/augmented-reality/quick-look/models/boxing-glove/boxing_glove_realistic.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/drummertoy/toy_drummer.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/teapot/teapot.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/stratocaster/fender_stratocaster.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/baseball-glove/glove_baseball_mtl_variant.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/chameleon/chameleon_anim_mtl_variant.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/pancakes/pancakes_photogrammetry.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/hummingbird/hummingbird_anim.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/toycar/toy_car.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/vintagerobot2k/robot.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/football/ball_football_realistic.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/baseball/ball_baseball_realistic.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/boxing-glove/boxing_glove_realistic.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/drummertoy/toy_drummer.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/teapot/teapot.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/stratocaster/fender_stratocaster.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/baseball-glove/glove_baseball_mtl_variant.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/chameleon/chameleon_anim_mtl_variant.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/pancakes/pancakes_photogrammetry.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/hummingbird/hummingbird_anim.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/toycar/toy_car.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/vintagerobot2k/robot.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/football/ball_football_realistic.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/baseball/ball_baseball_realistic.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/boxing-glove/boxing_glove_realistic.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/drummertoy/toy_drummer.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/teapot/teapot.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/stratocaster/fender_stratocaster.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/baseball-glove/glove_baseball_mtl_variant.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/chameleon/chameleon_anim_mtl_variant.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/pancakes/pancakes_photogrammetry.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/hummingbird/hummingbird_anim.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/toycar/toy_car.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/vintagerobot2k/robot.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/football/ball_football_realistic.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/baseball/ball_baseball_realistic.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/boxing-glove/boxing_glove_realistic.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/drummertoy/toy_drummer.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/teapot/teapot.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/stratocaster/fender_stratocaster.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/baseball-glove/glove_baseball_mtl_variant.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/chameleon/chameleon_anim_mtl_variant.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/pancakes/pancakes_photogrammetry.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/hummingbird/hummingbird_anim.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/toycar/toy_car.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/vintagerobot2k/robot.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/football/ball_football_realistic.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/baseball/ball_baseball_realistic.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/boxing-glove/boxing_glove_realistic.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/drummertoy/toy_drummer.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/teapot/teapot.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/stratocaster/fender_stratocaster.usdz",
+        "https://developer.apple.com/augmented-reality/quick-look/models/baseball-glove/glove_baseball_mtl_variant.usdz"
     ]
 
     // MARK: - Init
@@ -114,6 +166,33 @@ class AppModel {
     func startDownloadingSequentiallyViaLimit() {
         startDownloadTask {
             await self.usdzDownloadManager.startDownloadingAllWithLimit(maxConcurrentDownloads: 1)
+            await MainActor.run { self.downloadState = .completed }
+        }
+    }
+    
+    /// 시스템 리소스를 최적화하여 스마트하게 다운로드합니다.
+    /// CPU 코어 수, 메모리 상태, 네트워크 상태를 모두 고려하여 최적의 동시성을 결정합니다.
+    func startSmartDownloading() {
+        startDownloadTask {
+            await self.usdzDownloadManager.startSmartDownloading()
+            await MainActor.run { self.downloadState = .completed }
+        }
+    }
+    
+    /// 고성능 무제한 동시 다운로드 (시스템 리소스가 충분할 때 권장)
+    /// TaskGroup을 사용하여 모든 파일을 동시에 다운로드합니다.
+    func startHighPerformanceDownloading() {
+        let recommendedConcurrency = usdzDownloadManager.getRecommendedConcurrentDownloads()
+        print("🚀 High Performance Download - Recommended concurrency: \(recommendedConcurrency)")
+        
+        startDownloadTask {
+            if await recommendedConcurrency >= USDZDownloadManager.getMaxAllowedConcurrentDownloads() {
+                // 시스템 리소스가 충분하면 무제한 동시 다운로드
+                await self.usdzDownloadManager.startDownloadingAll()
+            } else {
+                // 그렇지 않으면 권장 동시성으로 제한
+                await self.usdzDownloadManager.startDownloadingAllWithLimit(maxConcurrentDownloads: recommendedConcurrency)
+            }
             await MainActor.run { self.downloadState = .completed }
         }
     }

@@ -8,6 +8,7 @@
 import SwiftUI
 import RealityKit
 import Foundation
+import Network
 
 struct USDZFileInfo: Identifiable, Equatable {
     let id = UUID()
@@ -45,7 +46,7 @@ struct USDZFileInfo: Identifiable, Equatable {
 @Observable
 class USDZDownloadManager {
     private(set) var files: [USDZFileInfo] = []
-    private let urlSession = URLSession.shared
+    private let urlSession: URLSession
     private(set) var currentActiveDownloads: Int = 0
     
     // 전체 다운로드 시간 추적
@@ -53,8 +54,38 @@ class USDZDownloadManager {
     private(set) var totalDownloadEndTime: Date?
     private(set) var isDownloadingAll: Bool = false
     
+    // 성능 최적화를 위한 상수들
+    static let maxAllowedConcurrentDownloads = 10
+    static let defaultConcurrentDownloads = 3
+    
+    // 네트워크 모니터링
+    private let networkMonitor = NWPathMonitor()
+    private var networkQueue = DispatchQueue(label: "NetworkMonitor")
+    private var currentNetworkPath: NWPath?
+    
+    // 다운로드 속도 추적
+    private var downloadSpeedHistory: [Double] = []
+    private var averageDownloadSpeed: Double = 0.0
+    private let maxSpeedSamples = 10
+    
     init(urls: [String]) {
+        // 고성능 URLSession 구성
+        let config = URLSessionConfiguration.default
+        config.urlCache = nil // 캐싱 비활성화로 메모리 절약
+        config.requestCachePolicy = .reloadIgnoringLocalCacheData
+        config.httpMaximumConnectionsPerHost = min(10, max(4, ProcessInfo.processInfo.processorCount))
+        config.timeoutIntervalForRequest = 30.0
+        config.timeoutIntervalForResource = 300.0
+        
+        // iOS 15+에서 사용 가능한 멀티패스 서비스
+        if #available(iOS 15.0, *) {
+            config.multipathServiceType = .handover
+        }
+        
+        self.urlSession = URLSession(configuration: config)
         self.files = urls.map { USDZFileInfo(url: $0) }
+        
+        startNetworkMonitoring()
     }
     
     /// 전체 다운로드 소요 시간 (초)
@@ -167,7 +198,7 @@ class USDZDownloadManager {
     // 1) await startDownloadingSequentiallyViaLimit()
     // 2) await startDownloadingAllWithLimit(maxConcurrentDownloads: 1)
     
-    private func downloadFile(at index: Int) async {
+    private func downloadFile(at index: Int, retryCount: Int = 0) async {
         guard index < files.count else { return }
         
         files[index].isDownloading = true
@@ -182,23 +213,75 @@ class USDZDownloadManager {
                 return
             }
             
-            let (data, response) = try await urlSession.data(from: url)
+            // 고성능 다운로드 요청 구성
+            var request = URLRequest(url: url)
+            request.cachePolicy = .reloadIgnoringLocalCacheData
+            request.setValue("application/octet-stream", forHTTPHeaderField: "Accept")
+            request.setValue("gzip, deflate, br", forHTTPHeaderField: "Accept-Encoding")
+            
+            let downloadStartTime = Date()
+            let (data, response) = try await urlSession.data(for: request)
+            let downloadDuration = Date().timeIntervalSince(downloadStartTime)
             
             files[index].downloadEndTime = Date()
             files[index].fileSize = Int64(data.count)
             files[index].isDownloaded = true
             files[index].isDownloading = false
-            await MainActor.run { self.currentActiveDownloads = max(0, self.currentActiveDownloads - 1) }
+            await MainActor.run { 
+                self.currentActiveDownloads = max(0, self.currentActiveDownloads - 1) 
+                // 다운로드 속도 업데이트
+                self.updateDownloadSpeed(bytes: Int64(data.count), duration: downloadDuration)
+            }
             
-            // Create entity from downloaded data
+            // Create entity from downloaded data in background
             await createEntity(from: data, at: index)
             
         } catch {
-            files[index].error = error.localizedDescription
+            let errorMessage = handleDownloadError(error)
+            files[index].error = errorMessage
             files[index].downloadEndTime = Date()
             files[index].isDownloading = false
             await MainActor.run { self.currentActiveDownloads = max(0, self.currentActiveDownloads - 1) }
+            
+            // 재시도 로직
+            if shouldRetry(error: error) && retryCount < 2 {
+                print("⚠️ Retrying download for file \(index) (attempt \(retryCount + 1))")
+                try? await Task.sleep(nanoseconds: UInt64(pow(2.0, Double(retryCount)) * 1_000_000_000)) // 지수 백오프
+                await downloadFile(at: index, retryCount: retryCount + 1)
+            }
         }
+    }
+    
+    /// 다운로드 에러 처리
+    private func handleDownloadError(_ error: Error) -> String {
+        if let urlError = error as? URLError {
+            switch urlError.code {
+            case .timedOut:
+                return "다운로드 시간 초과"
+            case .networkConnectionLost:
+                return "네트워크 연결 끊김"
+            case .notConnectedToInternet:
+                return "인터넷 연결 없음"
+            case .cannotFindHost:
+                return "서버를 찾을 수 없음"
+            default:
+                return "네트워크 오류: \(urlError.localizedDescription)"
+            }
+        }
+        return error.localizedDescription
+    }
+    
+    /// 재시도 여부 결정
+    private func shouldRetry(error: Error) -> Bool {
+        if let urlError = error as? URLError {
+            switch urlError.code {
+            case .timedOut, .networkConnectionLost, .cannotFindHost:
+                return true
+            default:
+                return false
+            }
+        }
+        return false
     }
     
     private func createEntity(from data: Data, at index: Int) async {
@@ -268,6 +351,215 @@ class USDZDownloadManager {
             files[index].entity = nil
             files[index].error = nil
         }
+    }
+    
+    // MARK: - 고성능 다운로드 최적화 메소드들
+    
+    /// 네트워크 모니터링 시작
+    private func startNetworkMonitoring() {
+        networkMonitor.pathUpdateHandler = { [weak self] path in
+            Task { @MainActor [weak self] in
+                self?.currentNetworkPath = path
+            }
+        }
+        networkMonitor.start(queue: networkQueue)
+    }
+    
+    /// 시스템 리소스를 고려한 최대 허용 동시 다운로드 수
+    static func getMaxAllowedConcurrentDownloads() -> Int {
+        return maxAllowedConcurrentDownloads
+    }
+    
+    /// 현재 시스템 상태에 따른 권장 동시 다운로드 수
+    func getRecommendedConcurrentDownloads() -> Int {
+        return calculateOptimalConcurrentDownloads()
+    }
+    
+    /// 유효한 동시 다운로드 수인지 확인
+    func isValidConcurrentDownloads(_ count: Int) -> Bool {
+        return count > 0 && count <= Self.maxAllowedConcurrentDownloads
+    }
+    
+    /// 시스템 상태를 종합하여 최적의 동시 다운로드 수 계산
+    func calculateOptimalConcurrentDownloads() -> Int {
+        let processorCount = ProcessInfo.processInfo.processorCount
+        let baseCount = max(2, min(processorCount, Self.defaultConcurrentDownloads))
+        
+        let networkMultiplier = getNetworkSpeedMultiplier()
+        let performanceMultiplier = getDevicePerformanceMultiplier()
+        let memoryMultiplier = getMemoryPressureMultiplier()
+        
+        let optimizedCount = Int(Double(baseCount) * networkMultiplier * performanceMultiplier * memoryMultiplier)
+        
+        return max(1, min(optimizedCount, Self.maxAllowedConcurrentDownloads))
+    }
+    
+    /// 네트워크 속도에 따른 배수
+    private func getNetworkSpeedMultiplier() -> Double {
+        guard let path = currentNetworkPath else { return 1.0 }
+        
+        if path.isExpensive { return 0.7 } // 셀룰러 데이터일 때 줄임
+        if !path.isConstrained { return 1.3 } // 제한 없는 네트워크일 때 늘림
+        
+        // 평균 다운로드 속도 기반 조정
+        if averageDownloadSpeed > 10_000_000 { // 10MB/s 이상
+            return 1.5
+        } else if averageDownloadSpeed > 5_000_000 { // 5MB/s 이상
+            return 1.2
+        } else if averageDownloadSpeed < 1_000_000 { // 1MB/s 미만
+            return 0.8
+        }
+        
+        return 1.0
+    }
+    
+    /// 기기 성능에 따른 배수
+    private func getDevicePerformanceMultiplier() -> Double {
+        let processorCount = ProcessInfo.processInfo.processorCount
+        let physicalMemory = ProcessInfo.processInfo.physicalMemory
+        
+        // 8GB 이상의 RAM과 8코어 이상일 때
+        if physicalMemory > 8_000_000_000 && processorCount >= 8 {
+            return 1.5
+        }
+        // 4GB 이상의 RAM과 6코어 이상일 때
+        else if physicalMemory > 4_000_000_000 && processorCount >= 6 {
+            return 1.2
+        }
+        // 2GB 미만의 RAM일 때
+        else if physicalMemory < 2_000_000_000 {
+            return 0.7
+        }
+        
+        return 1.0
+    }
+    
+    /// 메모리 압박 상황에 따른 배수
+    private func getMemoryPressureMultiplier() -> Double {
+        // 더 안전한 메모리 체크 방법 사용
+        let physicalMemory = ProcessInfo.processInfo.physicalMemory
+        let memoryPressure = getSimpleMemoryPressure()
+        
+        switch memoryPressure {
+        case .critical:
+            return 0.5
+        case .warning:
+            return 0.7
+        case .normal:
+            return 1.0
+        }
+    }
+    
+    /// 간단한 메모리 압박 상태 체크
+    private func getSimpleMemoryPressure() -> MemoryPressureLevel {
+        let physicalMemory = ProcessInfo.processInfo.physicalMemory
+        
+        // 물리적 메모리 기반으로 간단한 추정
+        if physicalMemory < 2_000_000_000 { // 2GB 미만
+            return .warning
+        } else if physicalMemory < 1_000_000_000 { // 1GB 미만
+            return .critical
+        } else {
+            return .normal
+        }
+    }
+    
+    /// 메모리 압박 레벨
+    private enum MemoryPressureLevel {
+        case normal
+        case warning
+        case critical
+    }
+    
+    /// 다운로드 속도 업데이트
+    private func updateDownloadSpeed(bytes: Int64, duration: TimeInterval) {
+        guard duration > 0 else { return }
+        
+        let speed = Double(bytes) / duration
+        downloadSpeedHistory.append(speed)
+        
+        if downloadSpeedHistory.count > maxSpeedSamples {
+            downloadSpeedHistory.removeFirst()
+        }
+        
+        averageDownloadSpeed = downloadSpeedHistory.reduce(0, +) / Double(downloadSpeedHistory.count)
+    }
+    
+    /// 스마트 다운로드 - 시스템 상태에 따라 최적화된 다운로드
+    func startSmartDownloading() async {
+        let optimalConcurrency = calculateOptimalConcurrentDownloads()
+        print("🧠 스마트 다운로드: 최적 동시성 = \(optimalConcurrency)")
+        print("📊 시스템 정보:")
+        print("   • CPU 코어: \(ProcessInfo.processInfo.processorCount)개")
+        print("   • 물리적 메모리: \(String(format: "%.1f", Double(ProcessInfo.processInfo.physicalMemory) / 1_000_000_000))GB")
+        print("   • 네트워크 상태: \(getNetworkStatusDescription())")
+        await startDownloadingAllWithLimit(maxConcurrentDownloads: optimalConcurrency)
+    }
+    
+    /// 네트워크 상태 설명
+    private func getNetworkStatusDescription() -> String {
+        guard let path = currentNetworkPath else { return "알 수 없음" }
+        
+        var status = ""
+        if path.usesInterfaceType(.wifi) {
+            status += "WiFi"
+        } else if path.usesInterfaceType(.cellular) {
+            status += "셀룰러"
+        } else if path.usesInterfaceType(.wiredEthernet) {
+            status += "유선"
+        } else {
+            status += "기타"
+        }
+        
+        if path.isExpensive {
+            status += " (데이터 제한)"
+        }
+        if path.isConstrained {
+            status += " (대역폭 제한)"
+        }
+        
+        return status
+    }
+    
+    /// 현재 다운로드 통계 정보
+    func getDownloadStatistics() -> DownloadStatistics {
+        let successfulDownloads = files.filter { $0.isDownloaded }.count
+        let failedDownloads = files.filter { $0.error != nil }.count
+        let totalBytes = files.reduce(0) { $0 + $1.fileSize }
+        let averageDuration = files.compactMap { $0.downloadDuration }.reduce(0, +) / Double(max(1, successfulDownloads))
+        
+        return DownloadStatistics(
+            totalFiles: files.count,
+            successfulDownloads: successfulDownloads,
+            failedDownloads: failedDownloads,
+            totalBytes: totalBytes,
+            averageDownloadDuration: averageDuration,
+            averageSpeed: averageDownloadSpeed
+        )
+    }
+}
+
+/// 다운로드 통계 정보
+struct DownloadStatistics {
+    let totalFiles: Int
+    let successfulDownloads: Int
+    let failedDownloads: Int
+    let totalBytes: Int64
+    let averageDownloadDuration: TimeInterval
+    let averageSpeed: Double
+    
+    var successRate: Double {
+        guard totalFiles > 0 else { return 0.0 }
+        return Double(successfulDownloads) / Double(totalFiles) * 100.0
+    }
+    
+    var totalSizeFormatted: String {
+        ByteCountFormatter.string(fromByteCount: totalBytes, countStyle: .file)
+    }
+    
+    var averageSpeedFormatted: String {
+        let speedInMBps = averageSpeed / 1_000_000
+        return String(format: "%.2f MB/s", speedInMBps)
     }
 }
 

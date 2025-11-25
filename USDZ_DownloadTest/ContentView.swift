@@ -161,6 +161,59 @@ struct ContentView: View {
                     .disabled(appModel.usdzDownloadManager.isDownloadingAll)
                 }
                 
+                // 새로운 스마트 다운로드 버튼들
+                HStack(spacing: 12) {
+                    Button("🧠 스마트 다운로드") {
+                        appModel.startSmartDownloading()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(appModel.usdzDownloadManager.isDownloadingAll)
+                    .help("시스템 리소스에 따라 최적의 동시성으로 다운로드")
+                    
+                    Button("🚀 고성능 다운로드") {
+                        appModel.startHighPerformanceDownloading()
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(appModel.usdzDownloadManager.isDownloadingAll)
+                    .help("최대 성능으로 다운로드")
+                    
+                    Button("❌ 취소") {
+                        appModel.cancelDownloads()
+                    }
+                    .buttonStyle(.bordered)
+                    .foregroundColor(.red)
+                    .disabled(!appModel.usdzDownloadManager.isDownloadingAll)
+                }
+                
+                // 시스템 정보 표시
+                VStack(alignment: .leading, spacing: 4) {
+                    let recommended = appModel.usdzDownloadManager.getRecommendedConcurrentDownloads()
+                    let maxAllowed = USDZDownloadManager.getMaxAllowedConcurrentDownloads()
+                    
+                    Text("💻 시스템 정보")
+                        .font(.headline)
+                    
+                    Text("• CPU 코어: \(ProcessInfo.processInfo.processorCount)개")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Text("• 권장 동시성: \(recommended)개")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Text("• 최대 허용: \(maxAllowed)개")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    let memoryGB = Double(ProcessInfo.processInfo.physicalMemory) / 1_000_000_000
+                    Text("• 물리적 메모리: \(String(format: "%.1f", memoryGB))GB")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding()
+                .background(Color(UIColor.systemGray6))
+                .cornerRadius(8)
+                
                 ToggleImmersiveSpaceButton()
             }
         }
